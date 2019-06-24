@@ -14,9 +14,5 @@
 </template>
 
 <script>
-export default {
-  meta: {
-    public: true
-  }
-}
+export default {}
 </script>

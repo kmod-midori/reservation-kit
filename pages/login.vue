@@ -36,8 +36,8 @@ export default {
       try {
         await this.$store.dispatch('auth/authenticate', {
           strategy: 'local',
-          uid: '2018110267',
-          password: 'pass'
+          uid: this.uid,
+          password: this.pass
         })
         this.$store.commit('snackbar/success', 'Logged in.')
         this.$router.push('/')
