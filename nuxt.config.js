@@ -16,10 +16,6 @@ module.exports = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      // {
-      //   rel: 'stylesheet',
-      //   href: 'https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css'
-      // },
       {
         rel: 'stylesheet',
         href:
@@ -43,7 +39,8 @@ module.exports = {
   },
   css: [],
   plugins: ['~/plugins/feathers-vuex', '~/plugins/filters'],
-  modules: ['@nuxtjs/vuetify', '@nuxtjs/pwa', '@nuxtjs/eslint-module'],
+  modules: ['@nuxtjs/pwa'],
+  devModules: ['@nuxtjs/vuetify', '@nuxtjs/eslint-module'],
   vuetify: {
     theme: {
       primary: colors.brown.base,
