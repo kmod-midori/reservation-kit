@@ -1,6 +1,6 @@
 const colors = require('vuetify/es5/util/colors').default
 
-module.exports = {
+const config = {
   mode: 'spa',
   head: {
     titleTemplate: '%s - ' + process.env.npm_package_name,
@@ -40,7 +40,7 @@ module.exports = {
   css: [],
   plugins: ['~/plugins/feathers-vuex', '~/plugins/filters'],
   modules: ['@nuxtjs/pwa'],
-  devModules: ['@nuxtjs/vuetify', '@nuxtjs/eslint-module'],
+  devModules: ['@nuxtjs/vuetify'],
   vuetify: {
     theme: {
       primary: colors.brown.base,
@@ -55,3 +55,9 @@ module.exports = {
     materialIcons: false
   }
 }
+
+if (process.env.NODE_ENV === 'development') {
+  config.devModules.push('@nuxtjs/eslint-module')
+}
+
+module.exports = config
