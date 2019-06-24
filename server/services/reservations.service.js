@@ -9,6 +9,7 @@ const { Forbidden, BadRequest } = require('@feathersjs/errors')
 const BatchLoader = require('@feathers-plus/batch-loader')
 const { loaderFactory } = BatchLoader
 const jws = require('jws')
+const moment = require('moment')
 
 const Model = require('../models/reservations.model')
 
@@ -61,7 +62,7 @@ module.exports = function(app) {
           expired: false,
           seatId: data.seatId
         },
-        params
+        provider: null
       })
       if (conflicting.total > 0) {
         throw new Forbidden('This seat is already occupied.')
@@ -72,11 +73,31 @@ module.exports = function(app) {
           userId: params.user._id,
           seatId: { $ne: null },
           expired: false
-        }
+        },
+        provider: null
       })
       if (selfConflicting.total > 0) {
         throw new Forbidden(
           'You have already reserved a seat in this or other rooms.'
+        )
+      }
+
+      const expired = await service.find({
+        query: {
+          userId: params.user._id,
+          seatId: { $ne: null },
+          expired: true,
+          confirmed: false,
+          createdAt: {
+            $gte: moment().startOf('month'),
+            $lte: moment().endOf('month')
+          }
+        },
+        provider: null
+      })
+      if (expired.total > 3) {
+        throw new Forbidden(
+          'You are no longer allowed to make reservations this month.'
         )
       }
 
