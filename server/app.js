@@ -35,6 +35,7 @@ app.configure(require('./authentication'))
 app.configure(require('./services'))
 app.configure(require('./channels'))
 app.configure(require('./cron'))
+app.configure(require('./initialize'))
 app.hooks(require('./app.hooks'))
 
 module.exports = app
