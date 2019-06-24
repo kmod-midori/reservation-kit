@@ -4,59 +4,124 @@
       v-model="room"
       label="Room"
       :items="rooms"
+      :loading="isFindRoomsPending"
+      :disabled="isFindRoomsPending"
       item-text="name"
       return-object
     ></v-select>
 
     <template v-if="room">
-      <room-rules :room="room" />
+      <v-card v-if="room.message" class="mb-4">
+        <v-card-title primary-title>
+          <div v-html="parsedMessage"></div>
+        </v-card-title>
+      </v-card>
+
       <reservation-form :room="room" @submit="verify" />
-      <vue-recaptcha
-        sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
-      ></vue-recaptcha>
+
+      <v-dialog v-model="captchaDialog" :persistent="processing" width="400px">
+        <v-card>
+          <v-card-title>
+            <span class="headline">Verification</span>
+          </v-card-title>
+          <v-card-text>
+            <vue-recaptcha
+              v-show="!processing"
+              ref="recaptcha"
+              recaptcha-host="www.recaptcha.net"
+              :load-recaptcha-script="true"
+              sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
+              @verify="submit"
+            />
+
+            <div v-show="processing">
+              Processing...
+              <v-progress-linear indeterminate />
+            </div>
+          </v-card-text>
+        </v-card>
+      </v-dialog>
     </template>
   </div>
 </template>
 
 <script>
 import VueRecaptcha from 'vue-recaptcha'
+import { makeFindMixin } from 'feathers-vuex'
+import moment from 'moment'
 import ReservationForm from '../../components/ReservationForm'
-import RoomRules from '../../components/RoomRules'
 
 export default {
   components: {
     ReservationForm,
-    RoomRules,
     VueRecaptcha
   },
+  mixins: [
+    makeFindMixin({
+      service: 'rooms',
+      params: () => ({ query: {} })
+    })
+  ],
   data() {
     return {
       room: null,
-      rooms: [
-        {
-          id: '1',
-          name: 'X9410 (Study Zone)',
-          seats: true,
-          instant: true,
-          openingHours: ['00:00', '22:00'],
-          minDuration: 30
-        },
-        {
-          id: '2',
-          name: 'X9506',
-          seats: false,
-          instant: false,
-          openingHours: ['08:00', '22:00'],
-          minDuration: 30,
-          allowedDays: [3, 30]
-        }
-      ],
-      form: null
+      reservation: null,
+      captchaDialog: false,
+      processing: false
+    }
+  },
+  computed: {
+    parsedMessage() {
+      return this.$options.filters.safeMarkdown(this.room.message)
     }
   },
   methods: {
     verify(form) {
-      this.form = form
+      const { Reservation } = this.$FeathersVuex
+      this.reservation = new Reservation({
+        roomId: this.room._id
+      })
+      if (form.seat) {
+        this.reservation.seatId = form.seat
+      }
+      if (form.date && form.time) {
+        const format = 'YYYY-MM-DD HH:mm'
+        this.reservation.startTime = moment(
+          `${form.date} ${form.time.start}`,
+          format
+        ).toDate()
+        this.reservation.endTime = moment(
+          `${form.date} ${form.time.end}`,
+          format
+        ).toDate()
+        this.reservation.usage = form.usage
+      }
+
+      this.$refs.recaptcha.reset()
+      this.processing = false
+      this.captchaDialog = true
+    },
+    async submit(recaptchaResponse) {
+      this.processing = true
+      let failed = false
+      try {
+        await this.reservation.save({
+          query: { $client: { recaptchaResponse } }
+        })
+      } catch (error) {
+        this.$store.commit(
+          'snackbar/error',
+          error.message || 'Reservation failed'
+        )
+        failed = true
+      }
+
+      if (!failed) {
+        this.$store.commit('snackbar/success', 'Success')
+        setTimeout(() => this.$router.go(-1), 3000)
+      } else {
+        this.captchaDialog = false
+      }
     }
   },
   meta: {

@@ -5,7 +5,8 @@ const Schema = mongoose.Schema
 const schema = new Schema({
   name: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   openTime: {
     type: String,
@@ -15,11 +16,24 @@ const schema = new Schema({
     type: String,
     required: true
   },
+  minDuration: {
+    type: Number,
+    required: true
+  },
+  mode: {
+    type: String,
+    required: true,
+    enum: ['room', 'seat']
+  },
+  minDays: Number,
+  maxDays: Number,
+  message: String,
   seats: [
     {
       id: {
         type: Number,
-        required: true
+        required: true,
+        unique: true
       },
       x: {
         type: Number,

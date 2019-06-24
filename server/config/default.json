@@ -13,7 +13,6 @@
       "header": {
         "typ": "access"
       },
-      "audience": "https://yourdomain.com",
       "subject": "anonymous",
       "issuer": "feathers",
       "algorithm": "HS256",
@@ -25,5 +24,21 @@
       "passwordField": "password"
     }
   },
-  "mongodb": "mongodb://localhost:27017/res-kit"
+  "mongodb": "mongodb://localhost:27017/res-kit",
+  "recaptcha": {
+    "sitekey": "6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI",
+    "secret": "6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe"
+  },
+  "qrCode": {
+    "secret": "leeds",
+    "ttl": 60000
+  },
+  "mailer": {
+    "host": "smtp.ethereal.email",
+    "port": 587,
+    "auth": {
+      "user": "emie67@ethereal.email",
+      "pass": "XAYE3rGX5eRvDJzntz"
+    }
+  }
 }

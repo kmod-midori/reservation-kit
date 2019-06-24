@@ -2,6 +2,7 @@
 const { AbilityBuilder, Ability } = require('@casl/ability')
 const { toMongoQuery } = require('@casl/mongoose')
 const { Forbidden } = require('@feathersjs/errors')
+const moment = require('moment')
 
 const TYPE_KEY = Symbol.for('type')
 
@@ -19,15 +20,45 @@ function subjectName(subject) {
 
 function defineAbilitiesFor(user) {
   const { rules, can } = AbilityBuilder.extract()
+  can(['read'], ['rooms', 'seatStatus', 'qrcodes'])
+  can('update', 'seatStatus')
 
   if (user) {
     can(['read'], 'users', { _id: user._id })
-    can(['read'], 'rooms')
-    can([])
+    can('read', 'reservations', {
+      $or: [
+        {
+          expired: false
+        },
+        {
+          userId: user._id
+        }
+      ]
+    })
+
+    can('create', 'reservations')
+    can('delete', 'reservations', {
+      userId: user._id,
+      $or: [
+        {
+          createdAt: {
+            $gte: moment()
+              .subtract(5, 'minutes')
+              .toDate() // Created in less than 5 minutes
+          },
+          confirmed: false,
+          expired: false
+        },
+        {
+          seatId: null
+        }
+      ]
+    })
   }
 
-  if (user.admin) {
-    can(['manage'], ['users', 'rooms'])
+  if (user && user.admin) {
+    can(['manage'], ['users', 'rooms', 'reservations'])
+    can('create', 'mailer')
   }
 
   if (process.env.NODE_ENV !== 'production') {
@@ -78,8 +109,6 @@ module.exports = function authorize(name = null) {
     if (!hook.id) {
       let query = toMongoQuery(ability, serviceName, action)
 
-      // query optimization [https://github.com/stalniy/casl/issues/30]
-      // if there only one condition don't use $or
       if (
         query &&
         typeof query === 'object' &&
@@ -94,21 +123,29 @@ module.exports = function authorize(name = null) {
       if (canReadQuery(query)) {
         Object.assign(hook.params.query, query)
       } else {
-        hook.result = {} // Skip actual service call
+        throw new Forbidden(`You are not allowed to ${action} ${serviceName}`)
       }
 
       return hook
     }
 
-    // TODO: make sure if params.query.$select is defined
-    // it should include fields defined in the rule, orherwise it won't work proparly
+    // Check if the target matches
     const params = Object.assign({}, hook.params, { provider: null })
+    let $client = null
+    if (params.query && params.query.$client) {
+      $client = params.query.$client
+      delete params.query.$client
+    }
     const result = await service.get(hook.id, params)
+    if ($client) {
+      params.query.$client = $client
+    }
 
     result[TYPE_KEY] = serviceName
     throwUnlessCan(action, result)
 
     if (action === 'get') {
+      // Simply return
       delete result[TYPE_KEY]
       hook.result = result
     }

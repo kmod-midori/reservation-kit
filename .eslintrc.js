@@ -20,6 +20,9 @@ module.exports = {
   rules: {
     'nuxt/no-cjs-in-config': 'off',
     'no-console': 'off',
-    'prettier/prettier': 'warn'
+    'prettier/prettier': 'warn',
+    'no-unused-vars': 'warn',
+    'vue/require-default-prop': 'off',
+    'vue/no-v-html': 'off'
   }
 }

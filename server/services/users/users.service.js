@@ -9,7 +9,11 @@ module.exports = function(app) {
     '/users',
     createService({
       Model,
-      lean: true
+      lean: true,
+      paginate: {
+        default: 10,
+        max: 25
+      }
     })
   )
 

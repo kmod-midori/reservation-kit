@@ -4,25 +4,27 @@ const Schema = mongoose.Schema
 
 const schema = new Schema(
   {
-    user: {
+    userId: {
       type: Schema.Types.ObjectId,
       required: true
     },
-    room: {
+    roomId: {
       type: Schema.Types.ObjectId,
       required: true
     },
-    expired: {
-      type: Boolean,
-      default: false
+
+    expired: Boolean,
+    confirmed: Boolean,
+
+    adminStatus: {
+      type: String,
+      enum: ['waiting', 'accepted', 'rejected']
     },
-    confirmed: {
-      type: Boolean,
-      default: false
-    },
+
     startTime: Date,
     endTime: Date,
-    seatId: Number
+    seatId: Number,
+    usage: String
   },
   {
     timestamps: true

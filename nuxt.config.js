@@ -2,9 +2,6 @@ const colors = require('vuetify/es5/util/colors').default
 
 module.exports = {
   mode: 'spa',
-  /*
-   ** Headers of the page
-   */
   head: {
     titleTemplate: '%s - ' + process.env.npm_package_name,
     title: process.env.npm_package_name || '',
@@ -19,10 +16,24 @@ module.exports = {
     ],
     link: [
       { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
+      // {
+      //   rel: 'stylesheet',
+      //   href: 'https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css'
+      // },
       {
         rel: 'stylesheet',
         href:
-          'https://fonts.proxy.ustclug.org/css?family=Roboto:300,400,500,700|Material+Icons'
+          'https://cdn.jsdelivr.net/npm/material-design-icons-iconfont@5.0.1/dist/material-design-icons.min.css'
+      },
+      {
+        rel: 'stylesheet',
+        href:
+          'https://cdn.jsdelivr.net/npm/roboto-fontface@0.10.0/css/roboto/roboto-fontface.min.css'
+      },
+      {
+        rel: 'stylesheet',
+        href:
+          'https://cdn.jsdelivr.net/npm/@mdi/font/css/materialdesignicons.min.css'
       }
     ]
   },
@@ -30,22 +41,9 @@ module.exports = {
   router: {
     middleware: ['auth', 'meta']
   },
-  /*
-   ** Global CSS
-   */
   css: [],
-  /*
-   ** Plugins to load before mounting the App
-   */
   plugins: ['~/plugins/feathers-vuex', '~/plugins/filters'],
-  /*
-   ** Nuxt.js modules
-   */
   modules: ['@nuxtjs/vuetify', '@nuxtjs/pwa', '@nuxtjs/eslint-module'],
-  /*
-   ** vuetify module configuration
-   ** https://github.com/nuxt-community/vuetify-module
-   */
   vuetify: {
     theme: {
       primary: colors.brown.base,
@@ -55,15 +53,8 @@ module.exports = {
       warning: colors.amber.base,
       error: colors.deepOrange.accent4,
       success: colors.green.accent3
-    }
-  },
-  /*
-   ** Build configuration
-   */
-  build: {
-    /*
-     ** You can extend webpack config here
-     */
-    extend(config, ctx) {}
+    },
+    css: true,
+    materialIcons: false
   }
 }

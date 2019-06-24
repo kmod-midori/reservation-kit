@@ -1,46 +1,47 @@
 <template>
   <div>
     <v-form ref="form" v-model="valid" lazy-validation>
-      <template v-if="room.instant">
+      <template v-if="room.mode === 'seat'">
         <v-alert :value="!instantAvailable" type="error">
           The room is currently not available for reservation. Opening hours:
-          <b>{{ room.openingHours[0] }}</b> to <b>{{ room.openingHours[1] }}</b>
+          <b>{{ room.openTime }}</b> to <b>{{ room.closeTime }}</b>
         </v-alert>
         <template v-if="instantAvailable">
           <seat-selector :room="room" @seat-clicked="seatClicked" />
         </template>
       </template>
 
-      <template v-else>
+      <template v-if="room.mode === 'room'">
         <date-picker-menu
           v-model="date"
           :min="minDate"
           :max="maxDate"
           :rules="requiredRules"
-          label="Date *"
+          label="Date"
         />
 
         <template v-if="date">
           <time-picker-menu
             v-model="time.start"
-            label="Start Time *"
-            :min="room.openingHours[0]"
+            label="Start Time"
+            :min="room.openTime"
             :max="maxStartTime"
             :allowed-minutes="allowedMinutes"
-            @input="time.end = null"
+            @input="endTime = null"
           />
 
           <time-picker-menu
             v-if="time.start"
             v-model="time.end"
-            label="End Time *"
+            label="End Time"
             :min="minEndTime"
-            :max="room.openingHours[1]"
+            :max="room.closeTime"
             :allowed-minutes="allowedMinutes"
           />
         </template>
         <v-text-field
-          label="Usage *"
+          v-model="usage"
+          label="Usage"
           single-line
           required
           :rules="requiredRules"
@@ -83,6 +84,7 @@
 
 <script>
 import moment from 'moment'
+import { roomAvailable } from '../utils/time'
 import DatePickerMenu from './DatePickerMenu'
 import TimePickerMenu from './TimePickerMenu'
 import SeatSelector from './SeatSelector'
@@ -111,29 +113,17 @@ export default {
         start: null,
         end: null
       },
+      usage: null,
       seat: null,
       seatDialog: false
     }
   },
   computed: {
     instantAvailable() {
-      const now = moment()
-      const minDuration = this.room.minDuration
-      return now.isBetween(
-        moment(this.room.openingHours[0], TIME_FORMAT).subtract(
-          minDuration,
-          'minutes'
-        ),
-        moment(this.room.openingHours[1], TIME_FORMAT).subtract(
-          minDuration * 2,
-          'minutes'
-        ),
-        null,
-        '[]'
-      )
+      return roomAvailable(this.room)
     },
     maxStartTime() {
-      return moment(this.room.openingHours[1], TIME_FORMAT)
+      return moment(this.room.closeTime, TIME_FORMAT)
         .subtract(this.room.minDuration, 'minutes')
         .format(TIME_FORMAT)
     },
@@ -144,12 +134,12 @@ export default {
     },
     minDate() {
       return moment()
-        .add(this.room.allowedDays[0], 'days')
+        .add(this.room.minDays, 'days')
         .format(DATE_FORMAT)
     },
     maxDate() {
       return moment()
-        .add(this.room.allowedDays[1], 'days')
+        .add(this.room.maxDays, 'days')
         .format(DATE_FORMAT)
     }
   },
@@ -168,7 +158,8 @@ export default {
           time: {
             start: this.time.start,
             end: this.time.end
-          }
+          },
+          usage: this.usage
         })
       }
     },

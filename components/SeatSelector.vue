@@ -1,12 +1,13 @@
 <template>
   <div>
-    <div class="seat-container">
+    <div v-if="isGetSeatStatusPending">Loading...</div>
+    <div v-else class="seat-container">
       <div
-        v-for="seat in seats"
+        v-for="seat in room.seats"
         :key="seat.id"
-        :class="['seat', seat.status]"
+        :class="['seat', seatAvail(seat)]"
         :style="seatStyles(seat)"
-        @click="$emit('seat-clicked', seat)"
+        @click="seatClicked(seat)"
       >
         {{ seat.id }}
       </div>
@@ -15,51 +16,39 @@
 </template>
 
 <script>
+import { makeGetMixin } from 'feathers-vuex'
+
 export default {
+  mixins: [
+    makeGetMixin({
+      service: 'seatStatus',
+      items: '_seatStatus',
+      id: function() {
+        return this.room._id
+      }
+    })
+  ],
   props: {
-    room: {
-      type: Object,
-      default: undefined
-    }
+    room: Object
   },
-  data() {
-    return {
-      seats: [
-        {
-          id: 1,
-          position: [0, 30],
-          width: 40,
-          height: 40,
-          status: 'free'
-        },
-        {
-          id: 2,
-          position: [50, 0],
-          width: 40,
-          height: 40,
-          status: 'using'
-        },
-        {
-          id: 3,
-          position: [200, 0],
-          width: 60,
-          height: 40,
-          status: 'reserved'
-        }
-      ]
-    }
-  },
-  computed: {},
+  mounted() {},
+  destroyed() {},
   methods: {
     seatStyles(seat) {
-      const pos = seat.position
       return {
         width: seat.width + 'px',
         height: seat.height + 'px',
         lineHeight: seat.height + 'px',
-        left: pos[0] + 'px',
-        top: pos[1] + 'px'
+        left: seat.x + 'px',
+        top: seat.y + 'px'
       }
+    },
+    seatAvail(seat) {
+      return this.seatStatus.status[seat.id] || 'free'
+    },
+    seatClicked(seat) {
+      seat.status = this.seatAvail(seat)
+      this.$emit('seat-clicked', seat)
     }
   }
 }
@@ -74,7 +63,6 @@ export default {
   overflow: auto;
   .seat {
     position: absolute;
-    // border: 2px solid black;
     color: white;
     text-align: center;
     &.free {

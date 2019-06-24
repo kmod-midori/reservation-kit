@@ -19,15 +19,18 @@
         <nuxt />
       </v-container>
     </v-content>
+    <global-snackbar />
   </v-app>
 </template>
 
 <script>
 import NavigationDrawer from '../components/NavigationDrawer.vue'
+import GlobalSnackbar from '../components/GlobalSnackbar'
 
 export default {
   components: {
-    NavigationDrawer
+    NavigationDrawer,
+    GlobalSnackbar
   },
   data() {
     return {
