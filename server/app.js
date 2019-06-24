@@ -26,7 +26,9 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
 mongoose.Promise = global.Promise
-mongoose.connect(app.get('mongodb'), { useNewUrlParser: true })
+mongoose.connect(process.env.MONGODB_URI || app.get('mongodb'), {
+  useNewUrlParser: true
+})
 
 app.configure(require('./middleware'))
 app.configure(require('./authentication'))

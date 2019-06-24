@@ -1,4 +1,4 @@
 {
-  "host": "with-featherjs-app.feathersjs.com",
-  "port": 80
+  "host": "reservation-kit.herokuapp.com",
+  "port": 443
 }
