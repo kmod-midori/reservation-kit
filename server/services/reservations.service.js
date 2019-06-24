@@ -130,15 +130,18 @@ module.exports = function(app) {
               )
             }
           }
-        }
+        },
+        acquire('rooms')
       ]
     },
     after: {
       all: [fastJoin(resolvers)],
-      create: [release('rooms')]
+      create: [release('rooms')],
+      patch: [release('rooms')]
     },
     error: {
-      create: [release('rooms')]
+      create: [release('rooms')],
+      patch: [release('rooms')]
     }
   })
 }
