@@ -49,14 +49,27 @@
         </v-list-tile-action>
       </v-list-tile>
     </v-list-group>
+
+    <v-list-tile @click="logout">
+      <v-list-tile-title>Log Out</v-list-tile-title>
+    </v-list-tile>
   </v-list>
 </template>
 
 <script>
 export default {
   computed: {
+    loggedIn() {
+      return !!this.$store.state.auth.user
+    },
     isAdmin() {
-      return this.$store.state.auth.user && this.$store.state.auth.user.admin
+      return this.loggedIn && this.$store.state.auth.user.admin
+    }
+  },
+  methods: {
+    async logout() {
+      await this.$store.dispatch('auth/logout')
+      this.$router.push('/login')
     }
   }
 }

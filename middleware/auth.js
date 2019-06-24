@@ -12,7 +12,7 @@ export default async function(context) {
     try {
       await store.dispatch('auth/authenticate')
     } catch (e) {
-      if (!isPublic) return redirect('/')
+      if (!isPublic) return redirect('/login')
     }
   }
 }

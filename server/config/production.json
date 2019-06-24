@@ -1,4 +1,4 @@
 {
   "host": "reservation-kit.herokuapp.com",
-  "port": 443
+  "port": 80
 }
